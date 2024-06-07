@@ -1,0 +1,45 @@
+#This Docker Compose file defines a multi-container application with three services: a database (db), a backend (backend), and a frontend (frontend). 
+#Each service is configured with specific settings for images, environment variables, ports, dependencies, and networks.
+#All services communicate through the mynetwork bridge network.
+version: '3'
+services:
+  db:
+    image: tubasi/cloud-computing:db-latest
+    container_name: db-1
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: news_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    networks:
+      - mynetwork
+
+  backend:
+    image: tubasi/cloud-computing:backend-latest
+    environment:
+      - DB_HOST=db
+      - DB_USER=user
+      - DB_PASSWORD=password
+      - DB_NAME=news_db
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    networks:
+      - mynetwork
+
+  frontend:
+    image: tubasi/cloud-computing:frontend-latest
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
+    name: mynetwork

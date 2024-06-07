@@ -1,0 +1,50 @@
+#This Docker Compose file defines three services: db, backend, and frontend, each built from their respective directories (./database, ./backend, ./frontend). 
+#The db service sets up a MySQL database with specified environment variables and maps port 3306. 
+#The backend service, dependent on db, connects to the database with environment variables and maps port 5000. 
+#The frontend service, dependent on backend, maps port 80. 
+#All services use the mynetwork bridge network for communication.
+version: '3'
+services:
+  db:
+    build:
+      context: ./database
+    container_name: db-1
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: news_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    networks:
+      - mynetwork
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      - DB_HOST=db
+      - DB_USER=user
+      - DB_PASSWORD=password
+      - DB_NAME=news_db
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    networks:
+      - mynetwork
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
+    name: mynetwork
